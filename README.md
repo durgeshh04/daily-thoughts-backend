@@ -1,3 +1,8 @@
+# Daily-Thoughts-Backend 
+
+This is a backend repository for the daily thoughts application
+
+
 ## Project setup
 
 ```bash
