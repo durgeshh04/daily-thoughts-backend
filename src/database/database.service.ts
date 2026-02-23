@@ -1,12 +1,12 @@
-import { neon } from '@neondatabase/serverless';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { drizzle } from 'drizzle-orm/neon-http';
+import { neon } from '@neondatabase/serverless';
 import * as schema from './schema/index';
 
 @Injectable()
 export class DatabaseService implements OnModuleInit {
-  public db: ReturnType<typeof drizzle>;
+  public readonly drizzle;
   constructor(private configService: ConfigService) {
     const connectionString = this.configService.get<string>('DATABASE_URL');
 
@@ -14,12 +14,12 @@ export class DatabaseService implements OnModuleInit {
       throw new Error('DATABASE_URL is not defined');
     }
     const sql = neon(connectionString);
-    this.db = drizzle(sql, { schema });
+    this.drizzle = drizzle(sql, { schema });
   }
 
   async onModuleInit() {
     try {
-      await this.db.execute('SELECT 1');
+      await this.drizzle.execute('SELECT 1');
       console.log('✅ Database connected (Drizzle + Neon)');
     } catch (error) {
       console.error('❌ Database connection failed:', error);
