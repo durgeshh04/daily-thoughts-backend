@@ -7,7 +7,7 @@ export class AuthService {
   constructor(private db: DatabaseService) {}
   async signup(dto: SignupDto) {
     try {
-      return 'signup method called';
+      return "signup service called....";
     } catch (error) {
       console.log('Signup failed', error);
       throw error;
