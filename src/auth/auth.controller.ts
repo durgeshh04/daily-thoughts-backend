@@ -14,33 +14,6 @@ export class AuthController {
     summary: 'Register new user',
     description: 'Create a new user account with email and password',
   })
-  @ApiResponse({
-    status: 201,
-    description: 'User successfully registered',
-    type: AuthResponseDto,
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad request - Email already registered or validation error',
-    schema: {
-      example: {
-        statusCode: 400,
-        message: 'Email already registered',
-        error: 'Bad Request',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 500,
-    description: 'Internal server error',
-    schema: {
-      example: {
-        statusCode: 500,
-        message: 'Something went wrong',
-        error: 'Server error',
-      },
-    },
-  })
   @ApiBody({ type: SignupDto })
   async signup(@Body() dto: SignupDto): Promise<any> {
     return this.authService.signup(dto);

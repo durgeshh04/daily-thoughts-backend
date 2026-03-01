@@ -33,7 +33,7 @@ export class AuthService {
         .where(eq(users.username, dto.username))
         .limit(1);
 
-      if (!existingUsername) {
+      if (existingUsername) {
         throw new BadRequestException('Username already taken');
       }
 
