@@ -3,17 +3,17 @@ import { ConfigService } from '@nestjs/config';
 import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
 import * as schema from './schema/index';
+import { EnvConfig } from 'src/config/env.config';
+
 
 @Injectable()
 export class DatabaseService implements OnModuleInit {
   public readonly drizzle;
-  constructor(private configService: ConfigService) {
-    const connectionString = this.configService.get<string>('DATABASE_URL');
-
-    if (!connectionString) {
-      throw new Error('DATABASE_URL is not defined');
-    }
-    const sql = neon(connectionString);
+  constructor(
+    private configService: ConfigService,
+    private env: EnvConfig,
+  ) {
+    const sql = neon(this.env.databaseUrl);
     this.drizzle = drizzle(sql, { schema });
   }
 

@@ -30,8 +30,19 @@ export class AuthController {
       },
     },
   })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+    schema: {
+      example: {
+        statusCode: 500,
+        message: 'Something went wrong',
+        error: 'Server error',
+      },
+    },
+  })
   @ApiBody({ type: SignupDto })
-  async signup(@Body() dto: SignupDto): Promise<string> {
+  async signup(@Body() dto: SignupDto): Promise<any> {
     return this.authService.signup(dto);
   }
 }

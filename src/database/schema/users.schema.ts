@@ -13,8 +13,9 @@ export const authProviderEnum = pgEnum('auth_provider', ['LOCAL', 'GOOGLE']);
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   email: varchar('email', { length: 255 }).notNull().unique(),
-  fullName: varchar('fullname', { length: 255 }),
-  mobile: varchar('mobile', { length: 10 }),
+  fullName: varchar('fullname', { length: 255 }).notNull(),
+  username: varchar('username', { length: 255 }).notNull().unique(),
+  mobile: varchar('mobile', { length: 10 }).notNull().unique(),
   avatar: text('avatar'),
   bio: text('bio'),
 
