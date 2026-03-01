@@ -45,7 +45,7 @@ export class AuthService {
         .insert(users)
         .values({
           email: dto.email,
-          name: dto.fullname.trim(),
+          fullName: dto.fullname.trim(),
           password: hashedPassword,
           username: dto.username,
           authProvider: 'LOCAL',
