@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 import * as bcrypt from 'bcrypt';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { EnvConfig } from 'src/config/env.config';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -74,11 +74,11 @@ export class AuthService {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: this.env.jwtAccessSecret,
-        expiresIn: Number(this.env.jwtAccessExpiration),
+        expiresIn: this.env.jwtAccessExpiration as any,
       }),
       this.jwtService.signAsync(payload, {
         secret: this.env.jwtRefreshSecret,
-        expiresIn: Number(this.env.jwtRefreshExpiration),
+        expiresIn: this.env.jwtRefreshExpiration as any,
       }),
     ]);
     const expiresAt = new Date();

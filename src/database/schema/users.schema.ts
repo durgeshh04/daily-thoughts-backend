@@ -15,7 +15,7 @@ export const users = pgTable('users', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   fullName: varchar('fullname', { length: 255 }).notNull(),
   username: varchar('username', { length: 255 }).notNull().unique(),
-  mobile: varchar('mobile', { length: 10 }).notNull().unique(),
+  mobile: varchar('mobile', { length: 10 }).unique(),
   avatar: text('avatar'),
   bio: text('bio'),
 
