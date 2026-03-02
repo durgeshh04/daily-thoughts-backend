@@ -8,10 +8,10 @@ class UserDataDto {
   email!: string;
 
   @ApiProperty({ example: 'John Doe' })
-  name!: string | null;
+  fullname!: string | null;
 
-  @ApiProperty({ example: 'https://example.com/profile.jpg', nullable: true })
-  profilePicture!: string | null;
+  @ApiProperty({ example: 'example_04', nullable: true })
+  username!: string | null;
 }
 
 export class AuthResponseDto {

@@ -1,41 +1,17 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsString,
-  MinLength,
-  MaxLength,
   Matches,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
 
-export class SignupDto {
-  @ApiProperty({
-    example: 'John Doe',
-    description: 'User full name',
-    minLength: 2,
-    maxLength: 50,
-    required: true,
-  })
-  @IsString()
-  @MinLength(2, { message: 'Name must be at least 2 characters long' })
-  @MaxLength(50, { message: 'Name must not exceed 50 characters' })
-  fullname!: string;
-
-  @ApiProperty({
-    example: 'example_04',
-    description: 'Username',
-    minLength: 5,
-    maxLength: 10,
-    required: true,
-  })
-  @IsString()
-  @MinLength(2, { message: 'Name must be at least 2 characters long' })
-  @MaxLength(50, { message: 'Name must not exceed 50 characters' })
-  username!: string;
-
+export class LoginDto {
   @ApiProperty({
     example: 'john.doe@example.com',
     description: 'User email address',
-    required: false,
+    required: true,
   })
   @IsEmail({}, { message: 'Please provide a valid email address' })
   email!: string;
