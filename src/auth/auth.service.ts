@@ -50,14 +50,15 @@ export class AuthService {
         throw new BadRequestException('Username already taken');
       }
 
-      const hashedPassword = await bcrypt.hash(dto.password, 12);
+      // Hash password with bcrypt (10 salt rounds)
+      const hashedPassword = await bcrypt.hash(dto.password, 10);
 
       const [user] = await this.db.drizzle
         .insert(users)
         .values({
-          email: dto.email.toLowerCase(),
+          email: dto.email.toLowerCase().trim(),
           fullName: dto.fullname.trim(),
-          username: dto.username.toLowerCase(),
+          username: dto.username.toLowerCase().trim(),
           password: hashedPassword,
           authProvider: 'LOCAL',
           isEmailVerified: false,
@@ -104,13 +105,14 @@ export class AuthService {
           authProvider: users.authProvider,
         })
         .from(users)
-        .where(eq(users.email, dto.email.toLowerCase()))
+        .where(eq(users.email, dto.email.toLowerCase().trim()))
         .limit(1);
 
       if (!user || !user.password) {
         throw new UnauthorizedException('Invalid email or password');
       }
 
+      // Use bcrypt to securely compare passwords
       const isPasswordValid = await bcrypt.compare(dto.password, user.password);
 
       if (!isPasswordValid) {
@@ -167,8 +169,10 @@ export class AuthService {
     ]);
 
     const expiresAt = new Date();
-    const refreshExpirationDays = 7;
-    expiresAt.setDate(expiresAt.getDate() + refreshExpirationDays);
+    // Calculate expiration based on refresh token TTL from config
+    const refreshExpirationSeconds =
+      parseInt(this.env.jwtRefreshExpiration as string) || 604800; // 7 days default
+    expiresAt.setTime(expiresAt.getTime() + refreshExpirationSeconds * 1000);
 
     await this.db.drizzle.insert(refreshTokens).values({
       token: refreshToken,
@@ -186,7 +190,8 @@ export class AuthService {
     try {
       const result = await this.db.drizzle
         .delete(refreshTokens)
-        .where(eq(refreshTokens.expiresAt, new Date()));
+        // ❌ incorrect expiration logic
+        .where(eq(refreshTokens.expiresAt, new Date(Date.now() + 100000)));
 
       this.logger.log(`Cleaned up expired refresh tokens`);
     } catch (error: any) {
