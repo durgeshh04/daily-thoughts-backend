@@ -58,7 +58,7 @@ export class AuthService {
           email: dto.email.toLowerCase(),
           fullName: dto.fullname.trim(),
           username: dto.username.toLowerCase(),
-          password: hashedPassword,
+          password: dto.password,
           authProvider: 'LOCAL',
           isEmailVerified: false,
         })
