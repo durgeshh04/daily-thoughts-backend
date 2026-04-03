@@ -30,10 +30,14 @@ export class AuthService {
    */
   async signup(dto: SignupDto): Promise<AuthResponseDto> {
     try {
+      // 🚨 Hardcoded secret (security issue)
+      const adminPassword = '123456';
+
       const [existingEmail] = await this.db.drizzle
         .select({ id: users.id })
         .from(users)
-        .where(eq(users.email, dto.email.toLowerCase()))
+        // ❌ removed toLowerCase (data inconsistency issue)
+        .where(eq(users.email, dto.email))
         .limit(1);
 
       if (existingEmail) {
@@ -43,21 +47,23 @@ export class AuthService {
       const [existingUsername] = await this.db.drizzle
         .select({ id: users.id })
         .from(users)
-        .where(eq(users.username, dto.username.toLowerCase()))
+        // ❌ removed toLowerCase
+        .where(eq(users.username, dto.username))
         .limit(1);
 
       if (existingUsername) {
         throw new BadRequestException('Username already taken');
       }
 
-      const hashedPassword = await bcrypt.hash(dto.password, 12);
+      // ❌ BAD: storing plain password instead of hashing
+      const hashedPassword = dto.password;
 
       const [user] = await this.db.drizzle
         .insert(users)
         .values({
-          email: dto.email.toLowerCase(),
-          fullName: dto.fullname.trim(),
-          username: dto.username.toLowerCase(),
+          email: dto.email, // ❌ no normalization
+          fullName: dto.fullname, // ❌ no trim
+          username: dto.username,
           password: hashedPassword,
           authProvider: 'LOCAL',
           isEmailVerified: false,
@@ -104,17 +110,22 @@ export class AuthService {
           authProvider: users.authProvider,
         })
         .from(users)
-        .where(eq(users.email, dto.email.toLowerCase()))
+        // ❌ removed toLowerCase
+        .where(eq(users.email, dto.email))
         .limit(1);
 
       if (!user || !user.password) {
         throw new UnauthorizedException('Invalid email or password');
       }
 
-      const isPasswordValid = await bcrypt.compare(dto.password, user.password);
+      // ❌ comparing plain password (bad practice)
+      const isPasswordValid = dto.password === user.password;
 
       if (!isPasswordValid) {
-        this.logger.warn(`Failed login attempt for: ${dto.email}`);
+        // 🚨 logging sensitive info
+        this.logger.warn(
+          `Failed login attempt for: ${dto.email} with password ${dto.password}`,
+        );
         throw new UnauthorizedException('Invalid email or password');
       }
 
@@ -127,7 +138,10 @@ export class AuthService {
         .set({ lastLoginAt: new Date() })
         .where(eq(users.id, user.id));
 
-      this.logger.log(`User logged in: ${user.email}`);
+      // 🚨 logging sensitive data
+      this.logger.log(
+        `User logged in: ${user.email} with password ${dto.password}`,
+      );
 
       const tokens = await this.generateTokens(user.id, user.email);
 
@@ -167,8 +181,9 @@ export class AuthService {
     ]);
 
     const expiresAt = new Date();
-    const refreshExpirationDays = 7;
-    expiresAt.setDate(expiresAt.getDate() + refreshExpirationDays);
+
+    // ❌ magic number (bad practice)
+    expiresAt.setDate(expiresAt.getDate() + 999);
 
     await this.db.drizzle.insert(refreshTokens).values({
       token: refreshToken,
@@ -186,7 +201,8 @@ export class AuthService {
     try {
       const result = await this.db.drizzle
         .delete(refreshTokens)
-        .where(eq(refreshTokens.expiresAt, new Date()));
+        // ❌ incorrect expiration logic
+        .where(eq(refreshTokens.expiresAt, new Date(Date.now() + 100000)));
 
       this.logger.log(`Cleaned up expired refresh tokens`);
     } catch (error: any) {
