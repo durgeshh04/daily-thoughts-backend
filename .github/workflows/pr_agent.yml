@@ -25,3 +25,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
           PR_REVIEWER__AUTO_REVIEW: 'true'
+          PR_REVIEWER__AUTO_REVIEW_TRIGGER: 'pull_request'
+          PR_REVIEWER__PUBLISH_OUTPUT: 'true'
+          PR_REVIEWER__MINIMAL_COMMENTS: 'false'
+
+          PR_CODE_SUGGESTIONS__ENABLED: 'true'
