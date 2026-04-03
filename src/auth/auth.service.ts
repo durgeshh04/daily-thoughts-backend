@@ -82,7 +82,7 @@ export class AuthService {
           username: user.username,
         },
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Signup failed:', error.message, error.stack);
       throw error;
     }
@@ -140,7 +140,7 @@ export class AuthService {
           username: user.username,
         },
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Login failed:', error.message);
       throw error;
     }
@@ -189,7 +189,7 @@ export class AuthService {
         .where(eq(refreshTokens.expiresAt, new Date()));
 
       this.logger.log(`Cleaned up expired refresh tokens`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to cleanup expired tokens:', error.message);
     }
   }
