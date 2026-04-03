@@ -27,3 +27,4 @@ jobs:
           PR_REVIEWER__AUTO_REVIEW: 'true'
           PR_REVIEWER__REQUIRE_TESTS_REVIEW: 'false'
           PR_REVIEWER__REQUIRE_SECURITY_REVIEW: 'false'
+          PR_CODE_SUGGESTIONS__ENABLED: "false"
