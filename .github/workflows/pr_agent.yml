@@ -20,11 +20,8 @@ jobs:
       - name: PR Agent Action
         uses: Codium-ai/pr-agent@main
         env:
-          GOOGLE_AI_STUDIO__GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          CONFIG__MODEL: 'gemini-1.5-flash'
+          OPENAI__API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CONFIG__MODEL: 'gpt-4o-mini'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
           PR_REVIEWER__AUTO_REVIEW: 'true'
-          PR_REVIEWER__REQUIRE_TESTS_REVIEW: 'false'
-          PR_REVIEWER__REQUIRE_SECURITY_REVIEW: 'false'
-          PR_CODE_SUGGESTIONS__ENABLED: "false"
