@@ -30,14 +30,10 @@ export class AuthService {
    */
   async signup(dto: SignupDto): Promise<AuthResponseDto> {
     try {
-      // 🚨 Hardcoded secret (security issue)
-      const adminPassword = '123456';
-
       const [existingEmail] = await this.db.drizzle
         .select({ id: users.id })
         .from(users)
-        // ❌ removed toLowerCase (data inconsistency issue)
-        .where(eq(users.email, dto.email))
+        .where(eq(users.email, dto.email.toLowerCase()))
         .limit(1);
 
       if (existingEmail) {
@@ -47,23 +43,22 @@ export class AuthService {
       const [existingUsername] = await this.db.drizzle
         .select({ id: users.id })
         .from(users)
-        // ❌ removed toLowerCase
-        .where(eq(users.username, dto.username))
+        .where(eq(users.username, dto.username.toLowerCase()))
         .limit(1);
 
       if (existingUsername) {
         throw new BadRequestException('Username already taken');
       }
 
-      // ❌ BAD: storing plain password instead of hashing
-      const hashedPassword = dto.password;
+      // Hash password with bcrypt (10 salt rounds)
+      const hashedPassword = await bcrypt.hash(dto.password, 10);
 
       const [user] = await this.db.drizzle
         .insert(users)
         .values({
-          email: dto.email, // ❌ no normalization
-          fullName: dto.fullname, // ❌ no trim
-          username: dto.username,
+          email: dto.email.toLowerCase().trim(),
+          fullName: dto.fullname.trim(),
+          username: dto.username.toLowerCase().trim(),
           password: hashedPassword,
           authProvider: 'LOCAL',
           isEmailVerified: false,
@@ -110,22 +105,18 @@ export class AuthService {
           authProvider: users.authProvider,
         })
         .from(users)
-        // ❌ removed toLowerCase
-        .where(eq(users.email, dto.email))
+        .where(eq(users.email, dto.email.toLowerCase().trim()))
         .limit(1);
 
       if (!user || !user.password) {
         throw new UnauthorizedException('Invalid email or password');
       }
 
-      // ❌ comparing plain password (bad practice)
-      const isPasswordValid = dto.password === user.password;
+      // Use bcrypt to securely compare passwords
+      const isPasswordValid = await bcrypt.compare(dto.password, user.password);
 
       if (!isPasswordValid) {
-        // 🚨 logging sensitive info
-        this.logger.warn(
-          `Failed login attempt for: ${dto.email} with password ${dto.password}`,
-        );
+        this.logger.warn(`Failed login attempt for: ${dto.email}`);
         throw new UnauthorizedException('Invalid email or password');
       }
 
@@ -138,10 +129,7 @@ export class AuthService {
         .set({ lastLoginAt: new Date() })
         .where(eq(users.id, user.id));
 
-      // 🚨 logging sensitive data
-      this.logger.log(
-        `User logged in: ${user.email} with password ${dto.password}`,
-      );
+      this.logger.log(`User logged in: ${user.email}`);
 
       const tokens = await this.generateTokens(user.id, user.email);
 
@@ -181,9 +169,10 @@ export class AuthService {
     ]);
 
     const expiresAt = new Date();
-
-    // ❌ magic number (bad practice)
-    expiresAt.setDate(expiresAt.getDate() + 999);
+    // Calculate expiration based on refresh token TTL from config
+    const refreshExpirationSeconds =
+      parseInt(this.env.jwtRefreshExpiration as string) || 604800; // 7 days default
+    expiresAt.setTime(expiresAt.getTime() + refreshExpirationSeconds * 1000);
 
     await this.db.drizzle.insert(refreshTokens).values({
       token: refreshToken,
