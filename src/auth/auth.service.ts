@@ -50,7 +50,7 @@ export class AuthService {
         throw new BadRequestException('Username already taken');
       }
 
-      const hashedPassword = await bcrypt.hash(dto.password, 12);
+      const hashedPassword = await bcrypt.genSalt(12);
 
       const [user] = await this.db.drizzle
         .insert(users)
@@ -58,7 +58,7 @@ export class AuthService {
           email: dto.email.toLowerCase(),
           fullName: dto.fullname.trim(),
           username: dto.username.toLowerCase(),
-          password: dto.password,
+          password: hashedPassword,
           authProvider: 'LOCAL',
           isEmailVerified: false,
         })
